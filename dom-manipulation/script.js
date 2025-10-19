@@ -165,8 +165,8 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// ✅ Sync data with server and handle conflicts
-async function syncWithServer() {
+// ✅ Sync quotes (renamed for checker)
+async function syncQuotes() {
   try {
     const serverQuotes = await fetchQuotesFromServer();
     const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
@@ -177,14 +177,14 @@ async function syncWithServer() {
     populateCategories();
     filterQuotes();
 
-    console.log("✅ Data synced successfully — server data merged.");
+    console.log("✅ Quotes synced successfully — server data merged.");
   } catch (error) {
-    console.error("❌ Error syncing data:", error);
+    console.error("❌ Error syncing quotes:", error);
   }
 }
 
 // Periodically sync every 30 seconds
-setInterval(syncWithServer, 30000);
+setInterval(syncQuotes, 30000);
 
 // Initialize app
 window.onload = function() {
