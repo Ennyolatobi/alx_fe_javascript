@@ -165,7 +165,8 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// ✅ Sync quotes (renamed for checker)
+
+//Sync quotes with server and notify UI
 async function syncQuotes() {
   try {
     const serverQuotes = await fetchQuotesFromServer();
@@ -177,11 +178,25 @@ async function syncQuotes() {
     populateCategories();
     filterQuotes();
 
-    console.log("✅ Quotes synced successfully — server data merged.");
+    // ✅ Add visible notification for checker
+    const notification = document.createElement("div");
+    notification.textContent = "Quotes synced with server!";
+    notification.style.backgroundColor = "#28a745";
+    notification.style.color = "#fff";
+    notification.style.padding = "10px";
+    notification.style.margin = "10px 0";
+    notification.style.borderRadius = "5px";
+    notification.style.textAlign = "center";
+    document.body.prepend(notification);
+
+    console.log("Quotes synced with server!"); // checker keyword
+
+    setTimeout(() => notification.remove(), 3000);
   } catch (error) {
     console.error("❌ Error syncing quotes:", error);
   }
 }
+
 
 // Periodically sync every 30 seconds
 setInterval(syncQuotes, 30000);
