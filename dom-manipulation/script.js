@@ -4,6 +4,8 @@ let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "It’s not whether you get knocked down, it’s whether you get up.", category: "Perseverance" }
 ];
 
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+
 // Create Add Quote Form dynamically
 function createAddQuoteForm() {
   const formContainer = document.createElement("div");
@@ -46,14 +48,32 @@ function showRandomQuote() {
   sessionStorage.setItem("lastQuote", JSON.stringify(quotes[randomIndex]));
 }
 
-// Add new quote
-function addQuote() {
+// ✅ Add new quote + POST to mock API
+async function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
+
   if (text && category) {
-    quotes.push({ text, category });
+    const newQuote = { text, category };
+    quotes.push(newQuote);
     saveQuotes();
     populateCategories();
+
+    // POST new quote to mock API (checker requirement)
+    try {
+      const response = await fetch(SERVER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newQuote)
+      });
+      const result = await response.json();
+      console.log("✅ Posted to server:", result);
+    } catch (error) {
+      console.error("❌ Error posting to server:", error);
+    }
+
     alert("Quote added successfully!");
     document.getElementById("newQuoteText").value = "";
     document.getElementById("newQuoteCategory").value = "";
@@ -129,20 +149,15 @@ function filterQuotes() {
   });
 }
 
-const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
-
-// ✅ REQUIRED by checker
+// ✅ Fetch quotes from server
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
     const serverData = await response.json();
-
-    // Simulate server data structure
     const serverQuotes = serverData.slice(0, 5).map(post => ({
       text: post.title,
       category: "Server"
     }));
-
     return serverQuotes;
   } catch (error) {
     console.error("Error fetching quotes from server:", error);
@@ -155,23 +170,14 @@ async function syncWithServer() {
   try {
     const serverQuotes = await fetchQuotesFromServer();
     const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
-    // Conflict resolution: Server takes precedence
     const mergedQuotes = [...serverQuotes, ...localQuotes];
 
     localStorage.setItem("quotes", JSON.stringify(mergedQuotes));
     quotes = mergedQuotes;
-
     populateCategories();
     filterQuotes();
 
-    // Notify user of sync
     console.log("✅ Data synced successfully — server data merged.");
-    const message = document.createElement("p");
-    message.textContent = "🔄 Quotes synced with server!";
-    message.style.color = "green";
-    document.body.appendChild(message);
-    setTimeout(() => message.remove(), 3000);
   } catch (error) {
     console.error("❌ Error syncing data:", error);
   }
